@@ -1,6 +1,5 @@
 package org.amcaul202.gcu.mpd.mpdcw1920;
 
-
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -24,11 +23,20 @@ import java.util.LinkedList;
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
     private TextView rawDataDisplay;
     private String result;
-    private Button startButton;
+
+    private Button RwButton;
+    private Button PlanRwButton;
+    private Button CurrentInButton;
+
+    //Traffic Scotland URLs (Split for IF Statement in onClick)
+    private String urlSource1 = "https://trafficscotland.org/rss/feeds/roadworks.aspx";
+    private String urlSource2 = "https://trafficscotland.org/rss/feeds/plannedroadworks.aspx";
+    private String urlSource3 = "https://trafficscotland.org/rss/feeds/currentincidents.aspx";
+
     // Traffic Scotland URLs
     //private String urlSource = "https://trafficscotland.org/rss/feeds/roadworks.aspx";
     //private String urlSource = "https://trafficscotland.org/rss/feeds/plannedroadworks.aspx";
-    private String urlSource = "https://trafficscotland.org/rss/feeds/currentincidents.aspx";
+    //private String urlSource = "https://trafficscotland.org/rss/feeds/currentincidents.aspx";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,24 +45,38 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
 
         rawDataDisplay = (TextView) findViewById(R.id.rawDataDisplay);
-        startButton = (Button) findViewById(R.id.startButton);
-        startButton.setOnClickListener(this);
-
+        RwButton = (Button) findViewById(R.id.RwButton);
+        PlanRwButton = (Button) findViewById(R.id.PlanRwButton);
+        CurrentInButton = (Button) findViewById(R.id.CurrentInButton);
+        RwButton.setOnClickListener(this);
+        PlanRwButton.setOnClickListener(this);
+        CurrentInButton.setOnClickListener(this);
     }
 
     public void onClick(View aview) {
-        startProgress();
+        //IF Statement for XML Links
+        if (aview != null) {
+            int id = aview.getId();
+
+            if (id == R.id.RwButton) {
+                String urlSource = urlSource1;
+                startProgress(urlSource);
+            } else if (id == R.id.PlanRwButton) {
+                String urlSource = urlSource2;
+                startProgress(urlSource);
+            } else if (id == R.id.CurrentInButton) {
+                String urlSource = urlSource3;
+                startProgress(urlSource);
+            }
+        }
     }
 
-    public void startProgress() {
-        // Run network access on a separate thread;
+    public void startProgress(String urlSource) {
         new Thread(new Task(urlSource)).start();
-    } //
+    }
 
-    // Need separate thread to access the internet resource over network
-    // Other neater solutions should be adopted in later iterations.
     private class Task implements Runnable {
-        private String url;
+        public String url;
         private LinkedList<Roadwork> alist;
 
         public Task(String aurl) {
@@ -64,24 +86,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
 
-            URL aurl;
+            URL aurl = null;
             URLConnection yc;
             BufferedReader in = null;
             String inputLine = "";
 
-
-            Log.e("MyTag", "in run");
+            Log.e("MyTag", "in run"); //Tag for Testing (REMOVE)
 
             try {
-                Log.e("MyTag", "in try");
+                Log.e("MyTag", "in try"); //Tag for Testing (REMOVE)
                 aurl = new URL(url);
                 yc = aurl.openConnection();
                 in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
-                //
-                // Throw away the first 2 header lines before parsing
-                //
-                //
-                //
                 result = in.readLine();
                 while ((inputLine = in.readLine()) != null) {
                     result = result + inputLine;
@@ -92,15 +108,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             } catch (IOException ae) {
                 Log.e("MyTag", "ioexception");
             }
-
-            //
-            // Now that you have the xml data you can parse it
-            //
-
-            // Now update the TextView to display raw XML data
-            // Probably not the best way to update TextView
-            // but we are just getting started !
-
 
             Roadwork roadwork = new Roadwork();
             String temp = null;
@@ -118,53 +125,41 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (xpp.getName().equalsIgnoreCase("channel")) {
                             alist = new LinkedList<Roadwork>();
                         } else if (xpp.getName().equalsIgnoreCase("item")) {
-                            Log.e("MyTag", "Item Start Tag found");
+                            Log.e("MyTag", "Item Start Tag found"); //Tag for Testing (REMOVE)
                             roadwork = new Roadwork();
                         }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         if (xpp.getName().equalsIgnoreCase("item")) {
-                            Log.e("MyTag", "item is " + roadwork.toString());
+                            Log.e("MyTag", "item is " + roadwork.toString()); //Tag for Testing (REMOVE)
                             alist.add(roadwork);
                         } else if (xpp.getName().equalsIgnoreCase("title")) {
-                            // Now just get the associated text
-
-                            // Do something with text
-                            Log.e("MyTag", "Title is " + temp);
+                            Log.e("MyTag", "Title is " + temp); //Tag for Testing (REMOVE)
                             roadwork.setTitle(temp);
                         } else if (xpp.getName().equalsIgnoreCase("description")) {
-                            // Check which Tag we have
-                            // Now just get the associated text
-
-                            // Do something with text
                             roadwork.setDescription(temp);
                         }
                     } else if (eventType == XmlPullParser.TEXT) {
                         temp = xpp.getText();
                         System.out.println("Text " + temp);
-                        Log.e("MyTag", "Text is " + temp);
+                        Log.e("MyTag", "Text is " + temp); //Tag for Testing (REMOVE)
                     }
                     // Get the next event
                     eventType = xpp.next();
-
                 } // End of while
-
-                //return alist;
             } catch (XmlPullParserException ae1) {
                 Log.e("MyTag", "Parsing error" + ae1.toString());
             } catch (IOException ae1) {
                 Log.e("MyTag", "IO error during parsing");
             }
 
-            Log.e("MyTag", "End document");
+            Log.e("MyTag", "End document"); //Tag for Testing (REMOVE)
 
-            System.out.println("Size: " + alist.size());
+            System.out.println("Size: " + alist.size()); //Tag for Testing (REMOVE)
             MainActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
-                    Log.d("UI thread", "I am the UI thread");
-
+                    Log.d("UI thread", "I am the UI thread"); //Tag for Testing (REMOVE)
 
                     String data = "";
-
 
                     for(Roadwork roadwork:alist) {
                         roadwork.getTitle();
@@ -172,12 +167,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         data += roadwork.getTitle() + " / " + roadwork.getDescription() + " \n  \n __";
                     }
                     rawDataDisplay.setText(data);
-
-
                 }
             });
-
-
         }
     }
 

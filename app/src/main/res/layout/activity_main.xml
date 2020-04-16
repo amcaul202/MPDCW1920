@@ -16,10 +16,22 @@
             android:text="Welcome to Mobile Platform Development"
             />
         <Button
-            android:id="@+id/startButton"
+            android:id="@+id/RwButton"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Press to get data"
+            android:text="Current Roadworks"
+            />
+        <Button
+            android:id="@+id/PlanRwButton"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Planned Roadworks"
+            />
+        <Button
+            android:id="@+id/CurrentInButton"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:text="Current Incidents"
             />
         <TextView
             android:id="@+id/acknowledgement"

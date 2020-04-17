@@ -47,5 +47,6 @@
             android:textSize="20sp"
             android:text="Raw Data is Displayed here"
             />
+
     </LinearLayout>
 </ScrollView>

@@ -6,7 +6,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentActivity;
+
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
@@ -18,11 +24,14 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Arrays;
 import java.util.LinkedList;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends FragmentActivity implements View.OnClickListener, OnMapReadyCallback {
     private TextView rawDataDisplay;
     private String result;
+
+    private GoogleMap mMap;
 
     private Button RwButton;
     private Button PlanRwButton;
@@ -44,13 +53,22 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        rawDataDisplay = (TextView) findViewById(R.id.rawDataDisplay);
-        RwButton = (Button) findViewById(R.id.RwButton);
-        PlanRwButton = (Button) findViewById(R.id.PlanRwButton);
-        CurrentInButton = (Button) findViewById(R.id.CurrentInButton);
+        //Google Maps API
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        mapFragment.getMapAsync(this);
+
+        rawDataDisplay = findViewById(R.id.rawDataDisplay);
+        RwButton = findViewById(R.id.RwButton);
+        PlanRwButton = findViewById(R.id.PlanRwButton);
+        CurrentInButton = findViewById(R.id.CurrentInButton);
         RwButton.setOnClickListener(this);
         PlanRwButton.setOnClickListener(this);
         CurrentInButton.setOnClickListener(this);
+    }
+
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
     }
 
     public void onClick(View aview) {
@@ -91,17 +109,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             BufferedReader in = null;
             String inputLine = "";
 
-            Log.e("MyTag", "in run"); //Tag for Testing (REMOVE)
-
             try {
-                Log.e("MyTag", "in try"); //Tag for Testing (REMOVE)
                 aurl = new URL(url);
                 yc = aurl.openConnection();
                 in = new BufferedReader(new InputStreamReader(yc.getInputStream()));
                 result = in.readLine();
                 while ((inputLine = in.readLine()) != null) {
                     result = result + inputLine;
-                    Log.e("MyTag", inputLine);
 
                 }
                 in.close();
@@ -125,23 +139,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         if (xpp.getName().equalsIgnoreCase("channel")) {
                             alist = new LinkedList<Roadwork>();
                         } else if (xpp.getName().equalsIgnoreCase("item")) {
-                            Log.e("MyTag", "Item Start Tag found"); //Tag for Testing (REMOVE)
                             roadwork = new Roadwork();
                         }
                     } else if (eventType == XmlPullParser.END_TAG) {
                         if (xpp.getName().equalsIgnoreCase("item")) {
-                            Log.e("MyTag", "item is " + roadwork.toString()); //Tag for Testing (REMOVE)
                             alist.add(roadwork);
                         } else if (xpp.getName().equalsIgnoreCase("title")) {
-                            Log.e("MyTag", "Title is " + temp); //Tag for Testing (REMOVE)
                             roadwork.setTitle(temp);
                         } else if (xpp.getName().equalsIgnoreCase("description")) {
                             roadwork.setDescription(temp);
+                        } else if (xpp.getName().equalsIgnoreCase("point")) {
+                            roadwork.setPosition(temp);
                         }
                     } else if (eventType == XmlPullParser.TEXT) {
                         temp = xpp.getText();
-                        System.out.println("Text " + temp);
-                        Log.e("MyTag", "Text is " + temp); //Tag for Testing (REMOVE)
                     }
                     // Get the next event
                     eventType = xpp.next();
@@ -152,21 +163,64 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 Log.e("MyTag", "IO error during parsing");
             }
 
-            Log.e("MyTag", "End document"); //Tag for Testing (REMOVE)
-
-            System.out.println("Size: " + alist.size()); //Tag for Testing (REMOVE)
             MainActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
-                    Log.d("UI thread", "I am the UI thread"); //Tag for Testing (REMOVE)
-
                     String data = "";
+                    String point = "";
+                    String title = "";
+
+                    String[] pointSplit = new String[2];
+                    String[] titleSplit = new String[2];
 
                     for(Roadwork roadwork:alist) {
                         roadwork.getTitle();
                         roadwork.getDescription();
-                        data += roadwork.getTitle() + " / " + roadwork.getDescription() + " \n  \n __";
+                        roadwork.getPosition();
+                        data += roadwork.getTitle() + " / " + roadwork.getDescription() + " / " + roadwork.getPosition() + " \n  \n __";
+                        point += roadwork.getPosition() + " ";
+                        title += roadwork.getTitle() + " / ";
+                        pointSplit = point.split(" ");
+                        titleSplit = title.split(" / ");
                     }
                     rawDataDisplay.setText(data);
+
+                    int size = pointSplit.length;
+                    int titleSize = titleSplit.length;
+
+                    Double[] longLat = new Double[size];
+                    Double[] lat = new Double[size/2];
+                    Double[] lon = new Double[size/2];
+                    String[] titlePoint = new String[titleSize];
+
+                    int lonCount = 0;
+                    int latCount = 0;
+                    int titleCount = 0;
+
+                    for(int i=0; i<size; i++) {
+                        longLat[i] = Double.parseDouble(pointSplit[i]);
+                    }
+
+                    for(int i=0; i<titleSize; i++) {
+                        titlePoint[titleCount] = titleSplit[i];
+                        titleCount++;
+                    }
+
+                    for (int i = 0; i<size; i++) {
+                        if (longLat[i] < 0) {
+                            lon[lonCount] = longLat[i];
+                            lonCount++;
+                        } else if (longLat[i] >= 0) {
+                            lat[latCount] = longLat[i];
+                            latCount++;
+                        }
+                    }
+
+                    int size1 = lat.length;
+
+                    for (int i = 0; i < size1; i++) {
+                        LatLng points = new LatLng(lat[i], lon[i]);
+                        mMap.addMarker(new MarkerOptions().position(points).title(titlePoint[i]));
+                    }
                 }
             });
         }

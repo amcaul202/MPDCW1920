@@ -1,6 +1,3 @@
-//  Adrian McAulay
-//  S1603916
-
 package org.amcaul202.gcu.mpd.mpdcw1920;
 
 public class Roadwork {

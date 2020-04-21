@@ -168,33 +168,43 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                     String data = "";
                     String point = "";
                     String title = "";
+                    String disc = "";
 
                     String[] pointSplit = new String[2];
                     String[] titleSplit = new String[2];
+                    String[] discSplit = new String[2];
 
                     for(Roadwork roadwork:alist) {
                         roadwork.getTitle();
                         roadwork.getDescription();
                         roadwork.getPosition();
+
                         data += roadwork.getTitle() + " / " + roadwork.getDescription() + " / " + roadwork.getPosition() + " \n  \n __";
+
                         point += roadwork.getPosition() + " ";
                         title += roadwork.getTitle() + " / ";
+                        disc += roadwork.getDescription() + " ¦ ";
+
                         pointSplit = point.split(" ");
                         titleSplit = title.split(" / ");
+                        discSplit = disc.split(" ¦ ");
                     }
                     rawDataDisplay.setText(data);
 
                     int size = pointSplit.length;
                     int titleSize = titleSplit.length;
+                    int discSize = discSplit.length;
 
                     Double[] longLat = new Double[size];
                     Double[] lat = new Double[size/2];
                     Double[] lon = new Double[size/2];
                     String[] titlePoint = new String[titleSize];
+                    String[] discPoint = new String[discSize];
 
                     int lonCount = 0;
                     int latCount = 0;
                     int titleCount = 0;
+                    int discCount = 0;
 
                     for(int i=0; i<size; i++) {
                         longLat[i] = Double.parseDouble(pointSplit[i]);
@@ -204,6 +214,13 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                         titlePoint[titleCount] = titleSplit[i];
                         titleCount++;
                     }
+
+                    for(int i=0; i<discSize; i++) {
+                        discPoint[discCount] = discSplit[i];
+                        discCount++;
+                    }
+
+                    System.out.println(Arrays.toString(discPoint));
 
                     for (int i = 0; i<size; i++) {
                         if (longLat[i] < 0) {
@@ -219,7 +236,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
                     for (int i = 0; i < size1; i++) {
                         LatLng points = new LatLng(lat[i], lon[i]);
-                        mMap.addMarker(new MarkerOptions().position(points).title(titlePoint[i]));
+                        mMap.addMarker(new MarkerOptions().position(points).title(titlePoint[i]).snippet(discPoint[i]));
                     }
                 }
             });

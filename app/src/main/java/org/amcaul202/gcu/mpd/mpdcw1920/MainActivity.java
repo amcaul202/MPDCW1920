@@ -8,6 +8,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.FragmentActivity;
 
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -28,7 +29,6 @@ import java.util.Arrays;
 import java.util.LinkedList;
 
 public class MainActivity extends FragmentActivity implements View.OnClickListener, OnMapReadyCallback {
-    private TextView rawDataDisplay;
     private String result;
 
     private GoogleMap mMap;
@@ -36,6 +36,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
     private Button RwButton;
     private Button PlanRwButton;
     private Button CurrentInButton;
+    private TextView itemView;
 
     //Traffic Scotland URLs (Split for IF Statement in onClick)
     private String urlSource1 = "https://trafficscotland.org/rss/feeds/roadworks.aspx";
@@ -58,7 +59,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
-        rawDataDisplay = findViewById(R.id.rawDataDisplay);
+        itemView = findViewById(R.id.ItemView);
         RwButton = findViewById(R.id.RwButton);
         PlanRwButton = findViewById(R.id.PlanRwButton);
         CurrentInButton = findViewById(R.id.CurrentInButton);
@@ -69,13 +70,18 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
+        mMap.clear();
+        LatLng startPoint = new LatLng(56.09655575, -3.96606445);
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(startPoint));
     }
+
+
 
     public void onClick(View aview) {
         //IF Statement for XML Links
         if (aview != null) {
             int id = aview.getId();
-
+            mMap.clear();
             if (id == R.id.RwButton) {
                 String urlSource = urlSource1;
                 startProgress(urlSource);
@@ -153,6 +159,7 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                         }
                     } else if (eventType == XmlPullParser.TEXT) {
                         temp = xpp.getText();
+                        temp = temp.replaceAll("<br />", " \n ");
                     }
                     // Get the next event
                     eventType = xpp.next();
@@ -165,10 +172,10 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
 
             MainActivity.this.runOnUiThread(new Runnable() {
                 public void run() {
-                    String data = "";
                     String point = "";
                     String title = "";
                     String disc = "";
+                    String item = "";
 
                     String[] pointSplit = new String[2];
                     String[] titleSplit = new String[2];
@@ -179,17 +186,15 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                         roadwork.getDescription();
                         roadwork.getPosition();
 
-                        data += roadwork.getTitle() + " / " + roadwork.getDescription() + " / " + roadwork.getPosition() + " \n  \n __";
-
                         point += roadwork.getPosition() + " ";
                         title += roadwork.getTitle() + " / ";
                         disc += roadwork.getDescription() + " ¦ ";
+                        item += "Road: " + roadwork.getTitle() + " \n " + roadwork.getDescription() + " \n \n ";
 
                         pointSplit = point.split(" ");
                         titleSplit = title.split(" / ");
                         discSplit = disc.split(" ¦ ");
                     }
-                    rawDataDisplay.setText(data);
 
                     int size = pointSplit.length;
                     int titleSize = titleSplit.length;
@@ -238,10 +243,11 @@ public class MainActivity extends FragmentActivity implements View.OnClickListen
                         LatLng points = new LatLng(lat[i], lon[i]);
                         mMap.addMarker(new MarkerOptions().position(points).title(titlePoint[i]).snippet(discPoint[i]));
                     }
+
+                    itemView.setText(item);
                 }
             });
         }
     }
-
 
 } // End of MainActivity

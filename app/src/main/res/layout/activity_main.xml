@@ -1,57 +1,74 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- MPD XML Starter code Semester B Session 2018 2019 -->
-    <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools=".MainActivity"
-        xmlns:tools2="http://schemas.android.com/tools"
-        android:orientation="vertical"
-        android:layout_width="wrap_content"
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:map="http://schemas.android.com/apk/res-auto"
+    xmlns:tools=".MainActivity"
+    xmlns:tools2="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_alignParentBottom="true"
+    android:orientation="vertical"
+    tools2:ignore="NamespaceTypo"
+    android:background="#7396ef ">
+
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        tools2:ignore="NamespaceTypo">
+        android:orientation="horizontal"
+        android:background="#7396ef ">
 
-        <fragment
-            android:id="@+id/map"
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:layout_width="429dp"
-            android:layout_height="500dp"
-            tools:context=".MainActivity" />
-
-        <TextView
-            android:id="@+id/salutation"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="Welcome to Mobile Platform Development"
-            />
         <Button
             android:id="@+id/RwButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Current Roadworks"
-            />
-        <Button
-            android:id="@+id/PlanRwButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Planned Roadworks"
-            />
+            android:layout_width="125dp"
+            android:layout_height="52dp"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="#ef7396"
+            android:text="Current Roadworks" />
+
         <Button
             android:id="@+id/CurrentInButton"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:text="Current Incidents"
-            />
-        <TextView
-            android:id="@+id/acknowledgement"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="Traffic Scotland Road Data"
-            />
-        <TextView
-            android:id="@+id/rawDataDisplay"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:textSize="20sp"
-            android:text="Raw Data is Displayed here"
-            />
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="#ef7396"
+            android:text="Current Incidents" />
+
+        <Button
+            android:id="@+id/PlanRwButton"
+            android:layout_width="wrap_content"
+            android:layout_height="52dp"
+            android:layout_gravity="center_horizontal"
+            android:backgroundTint="#ef7396"
+            android:text="Planned Roadworks" />
     </LinearLayout>
+
+
+    <fragment
+        android:id="@+id/map"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="409dp"
+        map:cameraZoom="7"
+        tools:context=".MainActivity" />
+
+    <ScrollView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:background="#7396ef "
+       >
+
+        <TextView
+            android:id="@+id/ItemView"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text=""
+            android:textSize="20sp"
+            android:background="#7396ef "/>
+
+
+    </ScrollView>
+
+</LinearLayout>
